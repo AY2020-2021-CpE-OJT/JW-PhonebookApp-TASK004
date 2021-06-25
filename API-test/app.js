@@ -12,6 +12,7 @@ mongoose.connect('mongodb+srv://m001-student:m001-mongodb-basics@cluster0.ryoyw.
 });
 
 const db = mongoose.connection;
+
 db.once('open', () => {
     console.log("Connected to MongoDB database ...");
 });
