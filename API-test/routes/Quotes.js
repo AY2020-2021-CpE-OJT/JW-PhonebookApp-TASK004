@@ -42,6 +42,7 @@ router.patch('/update/:id', async (req, res) => {
 //Get Random Quote
 router.get('/random', async (req, res) => {
     const count = await Quote.countDocuments();
+    
     const random = Math.floor(Math.random() * count);
     const q = await Quote.findOne().skip(random);
 
