@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 
 //Routes
 app.get('/',(req, res) => {
-    res.send("Hello World!");
+    res.send("HII");
 });
 
 const QuotesRoute = require('./routes/Quotes');
