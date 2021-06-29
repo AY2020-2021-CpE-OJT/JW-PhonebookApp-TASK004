@@ -32,6 +32,18 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.8.1
+  flutter_launcher_name: ^0.0.1
+
+flutter_launcher_name :
+  name: "Quotes"
+
+flutter_icons:
+  image_path: "assets/icon/ico-logo.png"
+  adaptive_icon_background: "assets/icon/ico-bg.png"
+  adaptive_icon_foreground: "assets/icon/ico-fg.png"
+  android: true
+  ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
