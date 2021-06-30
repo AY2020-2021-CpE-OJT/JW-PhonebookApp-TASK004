@@ -8,10 +8,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Welcome to Flutter',
-      theme: ThemeData(primaryColor: Color(0xff5E4649)),
+      theme: ThemeData(primaryColor: Color(0xFFFCC13A)),
       //color: Color(0xfff4cf9b),
       home: Scaffold(
-                appBar: AppBar(
+        appBar: AppBar(
           title: const Text('Welcome to Flutter'),
         ),
         body: Center(
