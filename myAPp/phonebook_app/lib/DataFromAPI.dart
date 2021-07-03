@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:phonebook_app/testDynamic.dart';
 import 'dart:convert';
 import 'createContact.dart';
 
@@ -25,8 +24,8 @@ class _DataFromAPIState extends State<DataFromAPI> {
     return user['first_name'] + " " + user['last_name'];
   }
 
-  dynamic _phonenum(dynamic user) {
-    return 'Number: ' + user['phone_numbers'][0];
+  String _phonenum(dynamic user) {
+    return "Main: " + user['phone_numbers'][0];
   }
 
   @override
@@ -55,8 +54,15 @@ class _DataFromAPIState extends State<DataFromAPI> {
                             child: Column(
                               children: <Widget>[
                                 ListTile(
-                                    title: Text(_name(_users[index])),
-                                    subtitle: Text(_phonenum(_users[index])))
+                                  title: Text(_name(_users[index])),
+                                  subtitle: Text(_phonenum(_users[index])),
+                                  onTap: () {},
+                                ),
+                                Text('All numbers:'),
+                                SizedBox(height: 5),
+                                for (var item in _users[index]['phone_numbers'])
+                                  Text(item),
+                                SizedBox(height: 20),
                               ],
                             ),
                           );
@@ -72,8 +78,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-              context,
+          Navigator.push(context,
               MaterialPageRoute(builder: (context) => createNewContact()));
         },
         child: Icon(
@@ -84,11 +89,13 @@ class _DataFromAPIState extends State<DataFromAPI> {
       ),
     );
   }
+
   @override
   void initState() {
     super.initState();
     fetchUsers();
   }
+
   Future<void> _getData() async {
     setState(() {
       fetchUsers();
