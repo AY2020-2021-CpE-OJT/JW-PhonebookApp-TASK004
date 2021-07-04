@@ -9,7 +9,7 @@ class DataFromAPI extends StatefulWidget {
 }
 
 class _DataFromAPIState extends State<DataFromAPI> {
-  final String apiUrl = "http://jwa-phonebook-api.herokuapp.com/contacts";
+  final String apiUrl = "https://jwa-phonebook-api.herokuapp.com/contacts";
   List<dynamic> _users = [];
 
   void fetchUsers() async {
