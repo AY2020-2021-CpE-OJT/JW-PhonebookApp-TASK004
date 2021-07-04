@@ -46,9 +46,11 @@ class _CreateNewContactState extends State<CreateNewContact> {
     for (int i = 0; i < _count; i++) {
       pnums.add(pnumControllers[i].text);
     }
+    List<String> reversedpnums = pnums.reversed.toList();
     setState(() {
+      //pnums.reversed.toList();
       contactsAppend.insert(
-          0, ContactModel(lnameController.text, fnameController.text, pnums));
+          0, ContactModel(lnameController.text, fnameController.text, reversedpnums));
     });
   }
 
@@ -262,12 +264,12 @@ class _CreateNewContactState extends State<CreateNewContact> {
     });
   }
 
-  Widget _addRemoveButton(bool add, int index) {
+  Widget _addRemoveButton(bool isTrue, int index) {
     return GestureDetector(
       child: InkWell(
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
-          if (add) {
+          if (isTrue) {
             setState(() {
               _count++;
               checkAdd++;
@@ -286,11 +288,11 @@ class _CreateNewContactState extends State<CreateNewContact> {
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: (add) ? Color(0xFFFCC13A) : Colors.redAccent,
+            color: (isTrue) ? Color(0xFFFCC13A) : Colors.redAccent,
             borderRadius: BorderRadius.circular(40),
           ),
           child: Icon(
-            (add) ? Icons.add : Icons.remove,
+            (isTrue) ? Icons.add : Icons.remove,
             color: Colors.white70,
           ),
         ),
