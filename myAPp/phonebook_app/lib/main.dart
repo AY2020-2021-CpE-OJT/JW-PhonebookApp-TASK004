@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phonebook_app/createContact.dart';
+import 'package:phonebook_app/DataFromAPI.dart';
 
 void main() => runApp(MyApp());
 
@@ -12,11 +12,12 @@ class MyApp extends StatelessWidget {
         primaryColor: Color(0xFFFCC13A),
         textSelectionTheme: TextSelectionThemeData(
             cursorColor: Color(0xFFFCC13A),
-            selectionHandleColor: Color(0xFFFCC13A)),
+            selectionHandleColor: Color(0xFFFCC13A),
+        selectionColor: Color(0xABFFD36B)),
       ),
       debugShowCheckedModeBanner: false,
       //
-      home: CreateNewContact(),
+      home: DataFromAPI(),
     );
   }
 }

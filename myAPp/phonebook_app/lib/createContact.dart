@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'contactModel.dart';
 
@@ -17,9 +18,8 @@ class CreateNewContact extends StatefulWidget {
 }
 
 class _CreateNewContactState extends State<CreateNewContact> {
-  int key = 0, checkAdd = 0;
+  int key = 0, checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
-
   String _result = '';
   RegExp digitValidator = RegExp("[0-9]+");
 
@@ -39,8 +39,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
 
   List<ContactModel> contactsAppend = <ContactModel>[];
 
-  int _count = 1;
-
   void saveContact() {
     List<String> pnums = <String>[];
     for (int i = 0; i < _count; i++) {
@@ -50,7 +48,9 @@ class _CreateNewContactState extends State<CreateNewContact> {
     setState(() {
       //pnums.reversed.toList();
       contactsAppend.insert(
-          0, ContactModel(lnameController.text, fnameController.text, reversedpnums));
+          0,
+          ContactModel(
+              lnameController.text, fnameController.text, reversedpnums));
     });
   }
 
@@ -75,8 +75,29 @@ class _CreateNewContactState extends State<CreateNewContact> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Create New", style: TextStyle(color: Color(0xFF5B3415))),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () async {
+              FocusManager.instance.primaryFocus?.unfocus();
+              setState(() {
+                 key = 0;
+                 checkAdd = 0;
+                 listNumber = 1;
+                 _count = 1;
+                 fnameController.clear();
+                 lnameController.clear();
+                 pnumControllers.clear();
+                 pnumControllers = <TextEditingController>[
+                   TextEditingController()
+                 ];
+              });
+            },
+          )
+        ],
       ),
       body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Container(
           padding: const EdgeInsets.all(20.0),
@@ -102,11 +123,12 @@ class _CreateNewContactState extends State<CreateNewContact> {
                         color: Color(0xFFFCC13A),
                       ),
                     ),
-                    errorBorder: InputBorder.none,
+                    //errorBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                    labelText: 'First name'),
+                    contentPadding: EdgeInsets.only(
+                        left: 15, bottom: 11, top: 11, right: 15),
+                    labelText: 'First name',
+                    ),
               ),
               SizedBox(height: 10),
               TextFormField(
@@ -126,14 +148,14 @@ class _CreateNewContactState extends State<CreateNewContact> {
                         color: Color(0xFFFCC13A),
                       ),
                     ),
-                    errorBorder: InputBorder.none,
+                    //errorBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    contentPadding: EdgeInsets.only(
+                        left: 15, bottom: 11, top: 11, right: 15),
                     labelText: 'Last Name'),
               ),
               SizedBox(height: 20),
-              Text("Contact Number/s",
+              Text("Contact Number/s: $listNumber",
                   style: TextStyle(color: Color(0xFF5B3415))),
               SizedBox(height: 20),
               Flexible(
@@ -145,13 +167,11 @@ class _CreateNewContactState extends State<CreateNewContact> {
                       return _row(index, context);
                     }),
               ),
-              SizedBox(
-                height: 10.0,
-              ),
               //Text(_result),
             ],
           ),
         ),
+
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -173,7 +193,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         Expanded(
           child: TextFormField(
             onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -194,24 +213,21 @@ class _CreateNewContactState extends State<CreateNewContact> {
                     color: Color(0xFFFCC13A),
                   ),
                 ),
-                errorBorder: InputBorder.none,
+                // errorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
                 errorText: isANumber ? null : "Please enter a number",
                 contentPadding:
                     EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                labelText: 'Phone number #$key'),
-            onChanged: (val) {
-              if (val.isEmpty || digitValidator.hasMatch(val)) {
-                _onUpdate(key, val);
-                setValidator(true);
-              } else {
-                setValidator(false);
-              }
-            },
+                labelText: 'Phone number'),
+            //onChanged: (val) {
+              //if (val.isEmpty || digitValidator.hasMatch(val)) {
+                //_onUpdate(key, val);
+              //  setValidator(true);
+              //} else {
+              //  setValidator(false);
+              //}
+            //},
           ),
-        ),
-        SizedBox(
-          height: 20,
         ),
         Padding(
           padding: const EdgeInsets.all(12.0),
@@ -225,39 +241,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
     );
   }
 
-  _onUpdate(int key, String val) {
-    //key = 0;
-    int foundKey = -1;
-    for (var map in _values) {
-      if (map.containsKey('id')) {
-        if (map['id'] == key) {
-          foundKey = key;
-          break;
-        }
-      }
-    }
-    if (-1 != foundKey) {
-      _values.removeWhere((map) {
-        return map['id'] == foundKey;
-      });
-    }
-    Map<String, dynamic> json = {
-      'id': key,
-      'phone_numbers': [val]
-    };
-
-    _values.add(json);
-
-    setState(() {
-      _result = _prettyPrint(_values);
-    });
-  }
-
-  String _prettyPrint(jsonObject) {
-    var encoder = JsonEncoder.withIndent('    ');
-    return encoder.convert(jsonObject);
-  }
-
   void setValidator(valid) {
     setState(() {
       isANumber = valid;
@@ -265,20 +248,21 @@ class _CreateNewContactState extends State<CreateNewContact> {
   }
 
   Widget _addRemoveButton(bool isTrue, int index) {
-    return GestureDetector(
-      child: InkWell(
+    return  InkWell(
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
           if (isTrue) {
             setState(() {
               _count++;
               checkAdd++;
+              listNumber++;
               pnumControllers.insert(0, TextEditingController());
             });
           } else {
             setState(() {
               _count--;
               checkAdd--;
+              listNumber--;
               pnumControllers.removeAt(index);
             });
           }
@@ -296,8 +280,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
             color: Colors.white70,
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
