@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phonebook_app/DataFromAPI.dart';
 
+import 'createContact.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -18,6 +20,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       //
       home: DataFromAPI(),
+        routes: <String, WidgetBuilder> {
+          '/screen1': (BuildContext context) => new DataFromAPI(),
+          '/screen2' : (BuildContext context) => new CreateNewContact(),
+        }
     );
   }
 }
