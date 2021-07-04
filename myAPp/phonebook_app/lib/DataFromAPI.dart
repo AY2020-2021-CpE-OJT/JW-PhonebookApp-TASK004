@@ -13,7 +13,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
   List<dynamic> _users = [];
 
   void fetchUsers() async {
-    var result = await http.get(apiUrl);
+    var result = await http.get(Uri.parse(apiUrl));
     setState(() {
       _users = jsonDecode(result.body);
     });
@@ -79,7 +79,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => createNewContact()));
+              MaterialPageRoute(builder: (context) => CreateNewContact()));
         },
         child: Icon(
           Icons.add,
