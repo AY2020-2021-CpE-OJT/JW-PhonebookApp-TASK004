@@ -1,15 +1,16 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'contactModel.dart';
 
-class ContactModel {
+class ContactModelSchema {
   final String lastName;
   final String firstName;
   final List<String> phoneNumbers;
 
-  ContactModel(this.lastName, this.firstName, this.phoneNumbers);
+  ContactModelSchema(this.lastName, this.firstName, this.phoneNumbers);
 }
 
 class CreateNewContact extends StatefulWidget {
@@ -37,7 +38,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
   final FocusNode fnameFocus = FocusNode();
   final FocusNode lnameFocus = FocusNode();
 
-  List<ContactModel> contactsAppend = <ContactModel>[];
+  List<ContactModelSchema> contactsAppend = <ContactModelSchema>[];
 
   void saveContact() {
     List<String> pnums = <String>[];
@@ -49,7 +50,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
       //pnums.reversed.toList();
       contactsAppend.insert(
           0,
-          ContactModel(
+          ContactModelSchema(
               lnameController.text, fnameController.text, reversedpnums));
     });
   }
@@ -81,16 +82,16 @@ class _CreateNewContactState extends State<CreateNewContact> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
               setState(() {
-                 key = 0;
-                 checkAdd = 0;
-                 listNumber = 1;
-                 _count = 1;
-                 fnameController.clear();
-                 lnameController.clear();
-                 pnumControllers.clear();
-                 pnumControllers = <TextEditingController>[
-                   TextEditingController()
-                 ];
+                key = 0;
+                checkAdd = 0;
+                listNumber = 1;
+                _count = 1;
+                fnameController.clear();
+                lnameController.clear();
+                pnumControllers.clear();
+                pnumControllers = <TextEditingController>[
+                  TextEditingController()
+                ];
               });
             },
           )
@@ -112,23 +113,23 @@ class _CreateNewContactState extends State<CreateNewContact> {
                   _fieldFocusChange(context, fnameFocus, lnameFocus);
                 },
                 decoration: new InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFF5B3415),
-                      ),
+                  border: InputBorder.none,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF5B3415),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFFFCC13A),
-                      ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFFFCC13A),
                     ),
-                    //errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.only(
-                        left: 15, bottom: 11, top: 11, right: 15),
-                    labelText: 'First name',
-                    ),
+                  ),
+                  //errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                  labelText: 'First name',
+                ),
               ),
               SizedBox(height: 10),
               TextFormField(
@@ -171,7 +172,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
             ],
           ),
         ),
-
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -220,12 +220,12 @@ class _CreateNewContactState extends State<CreateNewContact> {
                     EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                 labelText: 'Phone number'),
             //onChanged: (val) {
-              //if (val.isEmpty || digitValidator.hasMatch(val)) {
-                //_onUpdate(key, val);
-              //  setValidator(true);
-              //} else {
-              //  setValidator(false);
-              //}
+            //if (val.isEmpty || digitValidator.hasMatch(val)) {
+            //_onUpdate(key, val);
+            //  setValidator(true);
+            //} else {
+            //  setValidator(false);
+            //}
             //},
           ),
         ),
@@ -248,39 +248,39 @@ class _CreateNewContactState extends State<CreateNewContact> {
   }
 
   Widget _addRemoveButton(bool isTrue, int index) {
-    return  InkWell(
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          if (isTrue) {
-            setState(() {
-              _count++;
-              checkAdd++;
-              listNumber++;
-              pnumControllers.insert(0, TextEditingController());
-            });
-          } else {
-            setState(() {
-              _count--;
-              checkAdd--;
-              listNumber--;
-              pnumControllers.removeAt(index);
-            });
-          }
-        },
-        child: Container(
-          alignment: Alignment.center,
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: (isTrue) ? Color(0xFFFCC13A) : Colors.redAccent,
-            borderRadius: BorderRadius.circular(40),
-          ),
-          child: Icon(
-            (isTrue) ? Icons.add : Icons.remove,
-            color: Colors.white70,
-          ),
+    return InkWell(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+        if (isTrue) {
+          setState(() {
+            _count++;
+            checkAdd++;
+            listNumber++;
+            pnumControllers.insert(0, TextEditingController());
+          });
+        } else {
+          setState(() {
+            _count--;
+            checkAdd--;
+            listNumber--;
+            pnumControllers.removeAt(index);
+          });
+        }
+      },
+      child: Container(
+        alignment: Alignment.center,
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: (isTrue) ? Color(0xFFFCC13A) : Colors.redAccent,
+          borderRadius: BorderRadius.circular(40),
         ),
-      );
+        child: Icon(
+          (isTrue) ? Icons.add : Icons.remove,
+          color: Colors.white70,
+        ),
+      ),
+    );
   }
 }
 
@@ -291,12 +291,28 @@ _fieldFocusChange(
 }
 
 class CheckScreen extends StatelessWidget {
-  final List<ContactModel> todo;
+
+  final List<ContactModelSchema> todo;
 
   const CheckScreen({Key? key, required this.todo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
+      return http.post(
+        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'phone_numbers': pnums,
+          'first_name': fname,
+          'last_name': lname,
+        }),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Contacts'),
@@ -306,6 +322,7 @@ class CheckScreen extends StatelessWidget {
         child: ListView.builder(
           itemCount: todo.length,
           itemBuilder: (context, index) {
+            createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
             return ListTile(
               title: Text(
                   '${todo[index].firstName} ${todo[index].lastName} ${todo[index].phoneNumbers}'),
