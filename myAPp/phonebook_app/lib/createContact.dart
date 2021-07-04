@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:phonebook_app/DataFromAPI.dart';
-import 'package:phonebook_app/main.dart';
 
 class ContactModelSchema {
   final String lastName;
@@ -20,18 +18,12 @@ class CreateNewContact extends StatefulWidget {
 }
 
 class _CreateNewContactState extends State<CreateNewContact> {
-  int key = 0,
-      checkAdd = 0,
-      listNumber = 1,
-      _count = 1;
+  int key = 0, checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
-  String _result = '';
   RegExp digitValidator = RegExp("[0-9]+");
 
   bool isANumber = true;
-  String fname = '',
-      lname = '';
-  List<Map<String, dynamic>> _values = [];
+  String fname = '', lname = '';
 
   final fnameController = TextEditingController();
   final lnameController = TextEditingController();
@@ -64,8 +56,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
   void initState() {
     super.initState();
     _count = 1;
-    _result = '';
-    _values = [];
   }
 
   @override
@@ -77,7 +67,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -133,7 +122,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
                   //errorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   contentPadding:
-                  EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                   labelText: 'First name',
                 ),
               ),
@@ -185,7 +174,8 @@ class _CreateNewContactState extends State<CreateNewContact> {
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
-                  builder: (context) => CheckScreen(todo: contactsAppend)), (_) => false);
+                  builder: (context) => CheckScreen(todo: contactsAppend)),
+              (_) => false);
         },
         icon: Icon(Icons.save),
         label: Text("Save"),
@@ -223,7 +213,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
                 disabledBorder: InputBorder.none,
                 errorText: isANumber ? null : "Please enter a number",
                 contentPadding:
-                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                 labelText: 'Phone number'),
           ),
         ),
@@ -282,8 +272,8 @@ class _CreateNewContactState extends State<CreateNewContact> {
   }
 }
 
-_fieldFocusChange(BuildContext context, FocusNode currentFocus,
-    FocusNode nextFocus) {
+_fieldFocusChange(
+    BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
   currentFocus.unfocus();
   FocusScope.of(context).requestFocus(nextFocus);
 }
@@ -295,6 +285,7 @@ class CheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> strHold = <String>[];
     Future<http.Response> createAlbum(String fname, String lname, List pnums) {
       return http.post(
         Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
@@ -308,11 +299,12 @@ class CheckScreen extends StatelessWidget {
         }),
       );
     }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Successful'),
+          title: Center(child: Text('Successful')),
         ),
         body: Padding(
           padding: EdgeInsets.all(20.0),
@@ -324,30 +316,44 @@ class CheckScreen extends StatelessWidget {
               return Container(
                 child: Column(
                   children: <Widget>[
-                    Text('Contact Successfully Created',
+                    Text('\nSuccessfully Created',
                         style: TextStyle(
                             color: Color(0xFF5B3415),
                             fontWeight: FontWeight.bold,
                             fontSize: 40)),
                     Text(
-                        '\nFirst Name: ${todo[index]
-                            .firstName} \n\nLast Name: ${todo[index]
-                            .lastName} \n\nContact/s:',
-                        style: TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
-                    for (var item in todo[index].phoneNumbers)
-                      Text('\n' + item,
-                          style:
-                          TextStyle(color: Color(0xFF5B3415), fontSize: 20)),
-                    ElevatedButton(
-                      child: new Text(
-                        "Done",
-                        style: new TextStyle(fontSize: 20.0, color: Colors.white),
+                        '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
+                        style:
+                            TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
+                    for (var strHold in todo[index].phoneNumbers)
+                      Text('\n' + strHold,
+                          style: TextStyle(
+                              color: Color(0xFF5B3415), fontSize: 20)),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: ElevatedButton(
+                        child: new Text(
+                          "Done",
+                          style: new TextStyle(
+                              fontSize: 20.0, color: Color(0xFFFCC13A)),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, '/screen1', (_) => false);
+                        },
+                        style: ElevatedButton.styleFrom(
+                            primary: Color(0xFF5B3415),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)),
+                            padding: EdgeInsets.all(20)),
                       ),
-                      onPressed: () {
-
-                        Navigator.pushNamedAndRemoveUntil(
-                            context,'/screen1', (_) => false);
-                      },
+                    ),
+                    SizedBox(
+                      height: 10,
                     ),
                   ],
                 ),
