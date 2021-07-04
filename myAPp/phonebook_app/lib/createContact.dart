@@ -1,21 +1,28 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'contactModel.dart';
 
-class createNewContact extends StatefulWidget {
-  @override
-  _createNewContactState createState() => _createNewContactState();
+class ContactModel {
+  final String lastName;
+  final String firstName;
+  final List<String> phoneNumbers;
+
+  ContactModel(this.lastName, this.firstName, this.phoneNumbers);
 }
 
-// Define a corresponding State class.
-// This class holds the data related to the Form.
-class _createNewContactState extends State<createNewContact> {
-  int _count = 1, key = 0;
+class CreateNewContact extends StatefulWidget {
+  @override
+  _CreateNewContactState createState() => _CreateNewContactState();
+}
+
+class _CreateNewContactState extends State<CreateNewContact> {
+  int key = 0, checkAdd = 0;
   String val = '';
+
   String _result = '';
   RegExp digitValidator = RegExp("[0-9]+");
+
   bool isANumber = true;
   String fname = '', lname = '';
   List<Map<String, dynamic>> _values = [];
@@ -23,12 +30,41 @@ class _createNewContactState extends State<createNewContact> {
   final fnameController = TextEditingController();
   final lnameController = TextEditingController();
 
+  List<TextEditingController> pnumControllers = <TextEditingController>[
+    TextEditingController()
+  ];
+
+  final FocusNode fnameFocus = FocusNode();
+  final FocusNode lnameFocus = FocusNode();
+
+  List<ContactModel> contactsAppend = <ContactModel>[];
+
+  int _count = 1;
+
+  void saveContact() {
+    List<String> pnums = <String>[];
+    for (int i = 0; i < _count; i++) {
+      pnums.add(pnumControllers[i].text);
+    }
+    setState(() {
+      contactsAppend.insert(
+          0, ContactModel(lnameController.text, fnameController.text, pnums));
+    });
+  }
+
   @override
-  void initStat() {
+  void initState() {
     super.initState();
     _count = 1;
     _result = '';
     _values = [];
+  }
+
+  @override
+  void dispose() {
+    fnameController.dispose();
+    lnameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,91 +73,92 @@ class _createNewContactState extends State<createNewContact> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Create New", style: TextStyle(color: Color(0xFF5B3415))),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () async {
-              setState(() {
-                _count++;
-              });
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () async {
-              setState(() {
-                _count = 1;
-                _result = '';
-              });
-            },
-          )
-        ],
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextFormField(
-              controller: fnameController,
-              decoration: new InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFF5B3415),
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: fnameController,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.sentences,
+                focusNode: fnameFocus,
+                onFieldSubmitted: (term) {
+                  _fieldFocusChange(context, fnameFocus, lnameFocus);
+                },
+                decoration: new InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFF5B3415),
+                      ),
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFFFCC13A),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFFFCC13A),
+                      ),
                     ),
-                  ),
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                  hintText: 'First name'),
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              controller: lnameController,
-              decoration: new InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFF5B3415),
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    labelText: 'First name'),
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: lnameController,
+                textInputAction: TextInputAction.done,
+                textCapitalization: TextCapitalization.sentences,
+                focusNode: lnameFocus,
+                decoration: new InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFF5B3415),
+                      ),
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFFFCC13A),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xFFFCC13A),
+                      ),
                     ),
-                  ),
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  contentPadding:
-                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                  hintText: 'Last Name'),
-            ),
-            SizedBox(height: 20),
-            Text("Contact Number/s",
-                style: TextStyle(color: Color(0xFF5B3415))),
-            SizedBox(height: 20),
-            Flexible(
-              child: ListView.builder(
-                  itemCount: _count,
-                  itemBuilder: (context, index) {
-                    return _row(index);
-                  }),
-            ),
-            SizedBox(
-              height: 10.0,
-            ),
-            Text(_result),
-          ],
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    labelText: 'Last Name'),
+              ),
+              SizedBox(height: 20),
+              Text("Contact Number/s",
+                  style: TextStyle(color: Color(0xFF5B3415))),
+              SizedBox(height: 20),
+              Flexible(
+                child: ListView.builder(
+                    reverse: true,
+                    shrinkWrap: true,
+                    itemCount: _count,
+                    itemBuilder: (context, index) {
+                      return _row(index, context);
+                    }),
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              //Text(_result),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          saveContact();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => CheckScreen(todo: contactsAppend)));
+        },
         icon: Icon(Icons.save),
         label: Text("Save"),
         foregroundColor: Color(0xFFFCC13A),
@@ -130,13 +167,19 @@ class _createNewContactState extends State<createNewContact> {
     );
   }
 
-  _row( key) {
+  _row(int key, context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         Expanded(
           child: TextFormField(
-            maxLength: 8,
+            onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+            controller: pnumControllers[key],
+            textCapitalization: TextCapitalization.sentences,
+            maxLength: 11,
             keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.done,
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: OutlineInputBorder(
@@ -154,9 +197,8 @@ class _createNewContactState extends State<createNewContact> {
                 errorText: isANumber ? null : "Please enter a number",
                 contentPadding:
                     EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                hintText: 'Number $key'),
+                labelText: 'Phone number #$key'),
             onChanged: (val) {
-              //_onUpdate(key, val);
               if (val.isEmpty || digitValidator.hasMatch(val)) {
                 _onUpdate(key, val);
                 setValidator(true);
@@ -166,12 +208,23 @@ class _createNewContactState extends State<createNewContact> {
             },
           ),
         ),
+        SizedBox(
+          height: 20,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: _addRemoveButton(key == checkAdd, key),
+          ),
+        ),
       ],
     );
   }
 
   _onUpdate(int key, String val) {
-    key = 0;
+    //key = 0;
     int foundKey = -1;
     for (var map in _values) {
       if (map.containsKey('id')) {
@@ -207,5 +260,74 @@ class _createNewContactState extends State<createNewContact> {
     setState(() {
       isANumber = valid;
     });
+  }
+
+  Widget _addRemoveButton(bool add, int index) {
+    return GestureDetector(
+      child: InkWell(
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          if (add) {
+            setState(() {
+              _count++;
+              checkAdd++;
+              pnumControllers.insert(0, TextEditingController());
+            });
+          } else {
+            setState(() {
+              _count--;
+              checkAdd--;
+              pnumControllers.removeAt(index);
+            });
+          }
+        },
+        child: Container(
+          alignment: Alignment.center,
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: (add) ? Color(0xFFFCC13A) : Colors.redAccent,
+            borderRadius: BorderRadius.circular(40),
+          ),
+          child: Icon(
+            (add) ? Icons.add : Icons.remove,
+            color: Colors.white70,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+_fieldFocusChange(
+    BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+  currentFocus.unfocus();
+  FocusScope.of(context).requestFocus(nextFocus);
+}
+
+class CheckScreen extends StatelessWidget {
+  final List<ContactModel> todo;
+
+  const CheckScreen({Key? key, required this.todo}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Contacts'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: ListView.builder(
+          itemCount: todo.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(
+                  '${todo[index].firstName} ${todo[index].lastName} ${todo[index].phoneNumbers}'),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
