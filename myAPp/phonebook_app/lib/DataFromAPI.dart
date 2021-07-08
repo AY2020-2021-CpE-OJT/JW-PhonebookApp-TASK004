@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:phonebook_app/updateContact.dart';
 import 'dart:convert';
 import 'createContact.dart';
 
@@ -20,7 +21,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
     setState(() {
       _users = jsonDecode(result.body);
     });
-    print("Status Code [" + result.statusCode.toString() + "]");
+    print("Status Code [" + result.statusCode.toString() + "]: All Data Fetched");
   }
 
   String _name(dynamic user) {
@@ -32,7 +33,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
   }
 
   Future<http.Response> deleteContact(String id) {
-    print("Status Deleted [" + id + "]");
+    print("Status [Deleted]: [" + id + "]");
     return http.delete(Uri.parse(
         'https://jwa-phonebook-api.herokuapp.com/contacts/delete/' + id));
   }
@@ -59,23 +60,22 @@ class _DataFromAPIState extends State<DataFromAPI> {
                         padding: EdgeInsets.all(12.0),
                         itemCount: count = _users.length,
                         itemBuilder: (BuildContext context, int index) {
-                          //dynamic item = _users[index].toString();
                           return Dismissible(
                             key: Key(_users[index].toString()),
                             direction: DismissDirection.endToStart,
                             background: Container(
                               padding: EdgeInsets.symmetric(horizontal: 14.0),
-
-                              child: Row(mainAxisAlignment: MainAxisAlignment.end,
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: <Widget>[
                                     Icon(Icons.delete_forever,
                                         color: Colors.white70),
-                                    Text("Delete", style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16.0,
-                                        color: Colors.white70))
-                                  ]
-                              ),
+                                    Text("Delete",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16.0,
+                                            color: Colors.white70))
+                                  ]),
                               decoration: BoxDecoration(
                                 color: Colors.redAccent,
                                 borderRadius: BorderRadius.circular(15),
@@ -131,6 +131,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
                               child: Column(
+
                                 children: <Widget>[
                                   ListTile(
                                     shape: RoundedRectangleBorder(
@@ -139,25 +140,50 @@ class _DataFromAPIState extends State<DataFromAPI> {
                                     tileColor: index % 2 == 0
                                         ? Color(0x80FCC13A)
                                         : Color(0x40FFB500),
-                                    title: Text(_name(_users[index]),
-                                        style: TextStyle(
-                                          color: Color(0xFF5B3415),
-                                          fontWeight: FontWeight.bold,
-                                        )),
+                                    title: Text(
+                                      _name(_users[index]),
+                                      style: TextStyle(
+                                        color: Color(0xFF5B3415),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     subtitle: Text(_phonenum(_users[index])),
-                                    onLongPress: () {},
                                     onTap: () => showDialog<String>(
                                       context: context,
                                       builder: (BuildContext context) =>
                                           Padding(
                                         padding: const EdgeInsets.all(48.0),
                                         child: AlertDialog(
-                                          title: Text(_name(_users[index]),
-                                              style: TextStyle(
-                                                  color: Color(0xFF5B3415),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 24)),
-                                          content: Text('Phone Number/s'),
+                                          title: Text(
+                                            _name(_users[index]),
+                                            style: TextStyle(
+                                                color: Color(0xFF5B3415),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 24),
+                                          ),
+                                          content: Row(
+                                            children: [
+                                              Text('Phone Number/s'),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pushAndRemoveUntil(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              UpdateContact(specificID: _users[index]['_id'].toString())),
+                                                          (_) => false);
+                                                },
+                                                child: const Text(
+                                                  'EDIT',
+                                                  style: TextStyle(
+                                                    color: Color(0xFFFCC13A),
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           contentPadding:
                                               EdgeInsets.fromLTRB(24, 12, 0, 0),
                                           actions: <Widget>[
@@ -167,19 +193,31 @@ class _DataFromAPIState extends State<DataFromAPI> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.stretch,
                                                 children: [
-                                                  Text('> $item'),
+                                                  Text('>\t$item'),
+                                                  SizedBox(height: 4,),
                                                 ],
                                               ),
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, 'OK'),
-                                              child: const Text('OK',
-                                                  style: TextStyle(
-                                                    color: Color(0xFFFCC13A),
-                                                    fontWeight: FontWeight.bold,
-                                                  )),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context, 'OK'),
+                                                  child: const Text(
+                                                    'OK',
+                                                    style: TextStyle(
+                                                      color: Color(0xFFFCC13A),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ],
+
                                           actionsPadding:
                                               EdgeInsets.fromLTRB(24, 0, 0, 0),
                                         ),

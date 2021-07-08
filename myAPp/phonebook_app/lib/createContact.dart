@@ -1,15 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
 
-class ContactModelSchema {
+import 'CheckScreen.dart';
+
+class ContactData {
   final String lastName;
   final String firstName;
   final List<String> phoneNumbers;
 
-  ContactModelSchema(this.lastName, this.firstName, this.phoneNumbers);
+  ContactData(this.lastName, this.firstName, this.phoneNumbers);
 }
 
 class CreateNewContact extends StatefulWidget {
@@ -35,7 +34,7 @@ class _CreateNewContactState extends State<CreateNewContact> {
   final FocusNode fnameFocus = FocusNode();
   final FocusNode lnameFocus = FocusNode();
 
-  List<ContactModelSchema> contactsAppend = <ContactModelSchema>[];
+  List<ContactData> contactsAppend = <ContactData>[];
 
   void saveContact() {
     List<String> pnums = <String>[];
@@ -44,12 +43,9 @@ class _CreateNewContactState extends State<CreateNewContact> {
     }
     List<String> reversedpnums = pnums.reversed.toList();
     setState(() {
-      //pnums.reversed.toList();
-      contactsAppend.insert(
-          0,
-          ContactModelSchema(
-              lnameController.text, fnameController.text, reversedpnums));
+      contactsAppend.insert(0, ContactData(lnameController.text, fnameController.text, reversedpnums));
     });
+    print('Status Append Contacts [Success]');
   }
 
   @override
@@ -62,6 +58,9 @@ class _CreateNewContactState extends State<CreateNewContact> {
   void dispose() {
     fnameController.dispose();
     lnameController.dispose();
+    for (int i = 0; i < _count; i++) {
+      pnumControllers[i].dispose();
+    }
     super.dispose();
   }
 
@@ -124,6 +123,11 @@ class _CreateNewContactState extends State<CreateNewContact> {
                   contentPadding:
                       EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                   labelText: 'First name',
+
+                  suffixIcon: IconButton(
+                    onPressed: fnameController.clear,
+                    icon: Icon(Icons.cancel),
+                  ),
                 ),
               ),
               SizedBox(height: 10),
@@ -133,22 +137,27 @@ class _CreateNewContactState extends State<CreateNewContact> {
                 textCapitalization: TextCapitalization.sentences,
                 focusNode: lnameFocus,
                 decoration: new InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFF5B3415),
-                      ),
+                  border: InputBorder.none,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFF5B3415),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFFFCC13A),
-                      ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color(0xFFFCC13A),
                     ),
-                    //errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.only(
-                        left: 15, bottom: 11, top: 11, right: 15),
-                    labelText: 'Last Name'),
+                  ),
+                  //errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                  labelText: 'Last Name',
+                  suffixIcon: IconButton(
+                    onPressed: lnameController.clear,
+                    icon: Icon(Icons.cancel),
+                  ),
+                ),
               ),
               SizedBox(height: 20),
               Text("Contact Number/s: $listNumber",
@@ -170,12 +179,40 @@ class _CreateNewContactState extends State<CreateNewContact> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          saveContact();
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => CheckScreen(todo: contactsAppend)),
-              (_) => false);
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return new AlertDialog(
+                title: const Text("Confirm",
+                    style: TextStyle(
+                      color: Color(0xFF5B3415),
+                      fontWeight: FontWeight.bold,
+                    )),
+                content: const Text("Confirm creating this contact"),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(false);
+                      },
+                      child: const Text("CANCEL",
+                          style: TextStyle(color: Colors.redAccent))),
+                  TextButton(
+                    onPressed: () {
+                      saveContact();
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  CheckScreen(todo: contactsAppend)),
+                          (_) => false);
+                    },
+                    child: const Text("CONFIRM",
+                        style: TextStyle(color: Color(0xFFFCC13A))),
+                  ),
+                ],
+              );
+            },
+          );
         },
         icon: Icon(Icons.save),
         label: Text("Save"),
@@ -198,23 +235,28 @@ class _CreateNewContactState extends State<CreateNewContact> {
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.done,
             decoration: new InputDecoration(
-                border: InputBorder.none,
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Color(0xFF5B3415),
-                  ),
+              border: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xFF5B3415),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Color(0xFFFCC13A),
-                  ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xFFFCC13A),
                 ),
-                // errorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                errorText: isANumber ? null : "Please enter a number",
-                contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                labelText: 'Phone number'),
+              ),
+              // errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              errorText: isANumber ? null : "Please enter a number",
+              contentPadding:
+                  EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+              labelText: 'Phone number',
+              suffixIcon: IconButton(
+                onPressed: pnumControllers[key].clear,
+                icon: Icon(Icons.cancel),
+              ),
+            ),
           ),
         ),
         Padding(
@@ -278,90 +320,3 @@ _fieldFocusChange(
   FocusScope.of(context).requestFocus(nextFocus);
 }
 
-class CheckScreen extends StatelessWidget {
-  final List<ContactModelSchema> todo;
-
-  const CheckScreen({Key? key, required this.todo}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final List<String> strHold = <String>[];
-    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
-      return http.post(
-        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'phone_numbers': pnums,
-          'first_name': fname,
-          'last_name': lname,
-        }),
-      );
-    }
-
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Center(child: Text('Successful')),
-        ),
-        body: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: ListView.builder(
-            itemCount: todo.length,
-            itemBuilder: (context, index) {
-              createAlbum(todo[index].firstName, todo[index].lastName,
-                  todo[index].phoneNumbers);
-              return Container(
-                child: Column(
-                  children: <Widget>[
-                    Text('\nSuccessfully Created',
-                        style: TextStyle(
-                            color: Color(0xFF5B3415),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40)),
-                    Text(
-                        '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
-                        style:
-                            TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
-                    for (var strHold in todo[index].phoneNumbers)
-                      Text('\n' + strHold,
-                          style: TextStyle(
-                              color: Color(0xFF5B3415), fontSize: 20)),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      width: 300,
-                      child: ElevatedButton(
-                        child: new Text(
-                          "Done",
-                          style: new TextStyle(
-                              fontSize: 20.0, color: Color(0xFFFCC13A)),
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/screen1', (_) => false);
-                        },
-                        style: ElevatedButton.styleFrom(
-                            primary: Color(0xFF5B3415),
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
-                            padding: EdgeInsets.all(20)),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
