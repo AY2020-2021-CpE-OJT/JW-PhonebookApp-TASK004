@@ -172,52 +172,51 @@ class _CreateNewContactState extends State<CreateNewContact> {
                       return _row(index, context);
                     }),
               ),
-              //Text(_result),
+              FloatingActionButton.extended(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return new AlertDialog(
+                        title: const Text("Confirm",
+                            style: TextStyle(
+                              color: Color(0xFF5B3415),
+                              fontWeight: FontWeight.bold,
+                            )),
+                        content: const Text("Confirm creating this contact"),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
+                              child: const Text("CANCEL",
+                                  style: TextStyle(color: Colors.redAccent))),
+                          TextButton(
+                            onPressed: () {
+                              saveContact();
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CheckScreen(todo: contactsAppend)),
+                                      (_) => false);
+                            },
+                            child: const Text("CONFIRM",
+                                style: TextStyle(color: Color(0xFFFCC13A))),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: Icon(Icons.save),
+                label: Text("Save"),
+                foregroundColor: Color(0xFFFCC13A),
+                backgroundColor: Color(0xFF5B3415),
+              ),
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return new AlertDialog(
-                title: const Text("Confirm",
-                    style: TextStyle(
-                      color: Color(0xFF5B3415),
-                      fontWeight: FontWeight.bold,
-                    )),
-                content: const Text("Confirm creating this contact"),
-                actions: <Widget>[
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(false);
-                      },
-                      child: const Text("CANCEL",
-                          style: TextStyle(color: Colors.redAccent))),
-                  TextButton(
-                    onPressed: () {
-                      saveContact();
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  CheckScreen(todo: contactsAppend)),
-                          (_) => false);
-                    },
-                    child: const Text("CONFIRM",
-                        style: TextStyle(color: Color(0xFFFCC13A))),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        icon: Icon(Icons.save),
-        label: Text("Save"),
-        foregroundColor: Color(0xFFFCC13A),
-        backgroundColor: Color(0xFF5B3415),
       ),
     );
   }

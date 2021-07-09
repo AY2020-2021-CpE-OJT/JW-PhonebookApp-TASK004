@@ -27,66 +27,118 @@ class CheckScreen extends StatelessWidget {
       );
     }
 
+    List<int> listNumbers = [];
+    for (int i = 0; i < todo[0].phoneNumbers.length; i++) {
+      listNumbers.add(i + 1);
+    }
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(
-          title: Center(child: Text('Successful')),
+          title: Center(child: Text('Contact Summary')),
         ),
-        body: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: ListView.builder(
-            itemCount: todo.length,
-            itemBuilder: (context, index) {
-              createAlbum(todo[index].firstName, todo[index].lastName,
-                  todo[index].phoneNumbers);
-              return Container(
-                child: Column(
-                  children: <Widget>[
-                    Text('\nSuccessfully Created',
-                        style: TextStyle(
-                            color: Color(0xFF5B3415),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40)),
-                    Text(
-                        '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
-                        style:
-                        TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
-                    for (var strHold in todo[index].phoneNumbers)
-                      Text('\n' + strHold,
+        body: ListView.builder(
+          itemCount: todo.length,
+          itemBuilder: (context, index) {
+            createAlbum(todo[index].firstName, todo[index].lastName,
+                todo[index].phoneNumbers);
+            return Container(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Text('Successfully Created',
+                      style: TextStyle(
+                          color: Color(0xFF5B3415),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40)),
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('First Name: ',
                           style: TextStyle(
-                              color: Color(0xFF5B3415), fontSize: 20)),
-                    SizedBox(
-                      height: 20,
+                              color: Color(0xFF5B3415),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center),
+                      Text('${todo[index].firstName}',
+                          style:
+                              TextStyle(color: Color(0xFF5B3415), fontSize: 24),
+                          textAlign: TextAlign.center),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Last Name: ',
+                          style: TextStyle(
+                              color: Color(0xFF5B3415),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center),
+                      Text('${todo[index].lastName}',
+                          style:
+                              TextStyle(color: Color(0xFF5B3415), fontSize: 24),
+                          textAlign: TextAlign.center),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text('Contact Numbers/s:  ',
+                      style: TextStyle(
+                          color: Color(0xFF5B3415),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(
+                      listNumbers.length,
+                      (index) {
+                        return Container(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Phone #' +
+                                    listNumbers[index].toString() +
+                                    ':\t\t' +
+                                    todo[0].phoneNumbers[index].toString(),
+                                style: TextStyle(
+                                  color: Color(0xFF5B3415),
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                    SizedBox(
-                      width: 300,
-                      child: ElevatedButton(
-                        child: new Text(
-                          "Done",
-                          style: new TextStyle(
-                              fontSize: 20.0, color: Color(0xFFFCC13A)),
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/screen1', (_) => false);
-                        },
-                        style: ElevatedButton.styleFrom(
-                            primary: Color(0xFF5B3415),
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
-                            padding: EdgeInsets.all(20)),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+                context, '/screen1', (_) => false);
+          },
+          icon: Icon(Icons.done_all),
+          label: Text("Done"),
+          foregroundColor: Color(0xFFFCC13A),
+          backgroundColor: Color(0xFF5B3415),
         ),
       ),
     );

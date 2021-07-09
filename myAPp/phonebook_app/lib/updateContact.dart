@@ -4,15 +4,25 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:phonebook_app/DataFromAPI.dart';
 
-class ContactDataUpdate {
+class ContactData {
   final String lastName;
   final String firstName;
   final List<String> phoneNumbers;
 
-  ContactDataUpdate(this.lastName, this.firstName, this.phoneNumbers);
+  ContactData(this.lastName, this.firstName, this.phoneNumbers);
 }
 
-SpecificContact specificContactFromJson(String str) => SpecificContact.fromJson(json.decode(str));
+Future<SpecificContact> fetchSpecificContact(String id) async {
+  final response = await http.get(
+      Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/get/' + id));
+  print('Status [Success]: Got the ID [$id]');
+  if (response.statusCode == 200) {
+    print('Status [Success]: Specific Data Appended');
+    return SpecificContact.fromJson(json.decode(response.body));
+  } else {
+    throw Exception('Status [Failed]: Cannot load Contact');
+  }
+}
 
 class SpecificContact {
   SpecificContact({
@@ -29,28 +39,33 @@ class SpecificContact {
   String lastName;
   int v;
 
-  factory SpecificContact.fromJson(Map<String, dynamic> json) => SpecificContact(
-    phoneNumbers: List<String>.from(json["phone_numbers"].map((x) => x)),
-    id: json["_id"],
-    firstName: json["first_name"],
-    lastName: json["last_name"],
-    v: json["__v"],
-  );
+  factory SpecificContact.fromJson(Map<String, dynamic> json) =>
+      SpecificContact(
+        phoneNumbers: List<String>.from(json["phone_numbers"].map((x) => x)),
+        id: json["_id"],
+        firstName: json["first_name"],
+        lastName: json["last_name"],
+        v: json["__v"],
+      );
 }
 
 class UpdateContact extends StatefulWidget {
   final String specificID;
+
   const UpdateContact({Key? key, required this.specificID}) : super(key: key);
+
   @override
   _UpdateContactState createState() => _UpdateContactState(specificID);
 }
 
 class _UpdateContactState extends State<UpdateContact> {
-
   String specificID;
+
   _UpdateContactState(this.specificID);
 
-  int key = 0, checkAdd = 0, listNumber = 1, _count = 2;
+  late Future<SpecificContact> FutureSpecificContact;
+
+  int key = 0, checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
   RegExp digitValidator = RegExp("[0-9]+");
 
@@ -67,47 +82,19 @@ class _UpdateContactState extends State<UpdateContact> {
   final FocusNode fnameFocus = FocusNode();
   final FocusNode lnameFocus = FocusNode();
 
-  List<ContactDataUpdate> contactsAppend = <ContactDataUpdate>[];
+  List<SpecificContact> contactsAppend = <SpecificContact>[];
+
   Future<http.Response> updateContact(String id) {
     print("Status Updated [" + id + "]");
     return http.patch(Uri.parse(
         'https://jwa-phonebook-api.herokuapp.com/contacts/update/' + id));
   }
 
-  Future<http.Response> fetchAlbum(String id) {
-    return http.patch(Uri.parse(
-        'https://jwa-phonebook-api.herokuapp.com/contacts/get/' + id));
-  }
-
-  Future<SpecificContact> fetchSpecificContact(String id) async {
-    final response = await http.get(Uri.parse(
-        'https://jwa-phonebook-api.herokuapp.com/contacts/get/' + id));
-    print('Status [Success]: Got the ID [$id]');
-    if (response.statusCode == 200) {
-      print('Status [Success]: Data Appended');
-      return SpecificContact.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Status [Failed]: Cannot load Contact');
-    }
-  }
-
-  void saveContact() {
-    List<String> pnums = <String>[];
-    for (int i = 0; i < _count; i++) {
-      pnums.add(pnumControllers[i].text);
-    }
-    List<String> reversedpnums = pnums.reversed.toList();
-    setState(() {
-      contactsAppend.insert(0, ContactDataUpdate(lnameController.text, fnameController.text, reversedpnums));
-    });
-    print('Status Append Contacts [Success]');
-  }
-
   @override
   void initState() {
     super.initState();
     _count = 1;
-    fetchSpecificContact(specificID);
+    FutureSpecificContact = fetchSpecificContact(specificID);
   }
 
   @override
@@ -127,7 +114,8 @@ class _UpdateContactState extends State<UpdateContact> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text("Update Contact", style: TextStyle(color: Color(0xFF5B3415))),
+          title: Text("Update Contact",
+              style: TextStyle(color: Color(0xFF5B3415))),
           actions: [
             IconButton(
               icon: Icon(Icons.refresh),
@@ -154,134 +142,30 @@ class _UpdateContactState extends State<UpdateContact> {
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: fnameController,
-                  textInputAction: TextInputAction.next,
-                  textCapitalization: TextCapitalization.sentences,
-                  focusNode: fnameFocus,
-                  onFieldSubmitted: (term) {
-                    _fieldFocusChange(context, fnameFocus, lnameFocus);
-                  },
-                  decoration: new InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFF5B3415),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFFFCC13A),
-                      ),
-                    ),
-                    //errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                    labelText: 'First name',
-
-                    suffixIcon: IconButton(
-                      onPressed: fnameController.clear,
-                      icon: Icon(Icons.cancel),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: lnameController,
-                  textInputAction: TextInputAction.done,
-                  textCapitalization: TextCapitalization.sentences,
-                  focusNode: lnameFocus,
-                  decoration: new InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFF5B3415),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFFFCC13A),
-                      ),
-                    ),
-                    //errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                    labelText: 'Last Name',
-                    suffixIcon: IconButton(
-                      onPressed: lnameController.clear,
-                      icon: Icon(Icons.cancel),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text("Contact Number/s: $listNumber",
-                    style: TextStyle(color: Color(0xFF5B3415))),
-                SizedBox(height: 20),
-                Flexible(
-                  child: ListView.builder(
-                      reverse: true,
-                      shrinkWrap: true,
-                      itemCount: _count,
-                      itemBuilder: (context, index) {
-                        return _row(index, context);
-                      }),
-                ),
-                //Text(_result),
-              ],
+            child: FutureBuilder<SpecificContact>(
+              future: FutureSpecificContact,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  String? name1 =
+                      Text(snapshot.data!.firstName.toString()).data;
+                  String? name2 = Text(snapshot.data!.lastName.toString()).data;
+                  return namesForm(name1!, name2!, context);
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                }
+                return Center(
+                    child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF5B3415))));
+              },
             ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return new AlertDialog(
-                  title: const Text("Confirm",
-                      style: TextStyle(
-                        color: Color(0xFF5B3415),
-                        fontWeight: FontWeight.bold,
-                      )),
-                  content: const Text("Confirm creating this contact"),
-                  actions: <Widget>[
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(false);
-                        },
-                        child: const Text("CANCEL",
-                            style: TextStyle(color: Colors.redAccent))),
-                    TextButton(
-                      onPressed: () {
-                        saveContact();
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    CheckScreen(todo: contactsAppend)),
-                                (_) => false);
-                      },
-                      child: const Text("CONFIRM",
-                          style: TextStyle(color: Color(0xFFFCC13A))),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-          icon: Icon(Icons.save),
-          label: Text("Save Changes"),
-          foregroundColor: Color(0xFFFCC13A),
-          backgroundColor: Color(0xFF5B3415),
         ),
       ),
     );
   }
 
-  Future<bool> _onBackPressed(){
+  Future<bool> _onBackPressed() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -303,10 +187,8 @@ class _UpdateContactState extends State<UpdateContact> {
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            DataFromAPI()),
-                        (_) => false);
+                    MaterialPageRoute(builder: (context) => DataFromAPI()),
+                    (_) => false);
               },
               child: const Text("CONFIRM",
                   style: TextStyle(color: Color(0xFFFCC13A))),
@@ -316,6 +198,143 @@ class _UpdateContactState extends State<UpdateContact> {
       },
     );
     return new Future.value(true);
+  }
+
+  namesForm(String contentFname, String contentLname, context) {
+    fnameController = TextEditingController(text: contentFname);
+    lnameController = TextEditingController(text: contentLname);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SizedBox(
+        //padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            Text("Name: " + contentFname + " " + contentLname),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              controller: fnameController,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.sentences,
+              focusNode: fnameFocus,
+              onFieldSubmitted: (term) {
+                _fieldFocusChange(context, fnameFocus, lnameFocus);
+              },
+              decoration: new InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xFF5B3415),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xFFFCC13A),
+                  ),
+                ),
+                //errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                labelText: 'First name',
+                suffixIcon: IconButton(
+                  onPressed: fnameController.clear,
+                  icon: Icon(Icons.cancel),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              controller: lnameController,
+              textInputAction: TextInputAction.done,
+              textCapitalization: TextCapitalization.sentences,
+              focusNode: lnameFocus,
+              decoration: new InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xFF5B3415),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xFFFCC13A),
+                  ),
+                ),
+                disabledBorder: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                labelText: 'Last Name',
+                suffixIcon: IconButton(
+                  onPressed: lnameController.clear,
+                  icon: Icon(Icons.cancel),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text("Contact Number/s: $listNumber",
+                style: TextStyle(color: Color(0xFF5B3415))),
+            SizedBox(height: 20),
+            Flexible(
+              child: ListView.builder(
+                  reverse: true,
+                  shrinkWrap: true,
+                  itemCount: _count,
+                  itemBuilder: (context, index) {
+                    return _row(index, context);
+                  }),
+            ),
+            SizedBox(height: 20),
+            FloatingActionButton.extended(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return new AlertDialog(
+                      title: const Text("Confirm",
+                          style: TextStyle(
+                            color: Color(0xFF5B3415),
+                            fontWeight: FontWeight.bold,
+                          )),
+                      content: const Text("Confirm creating this contact"),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: const Text("CANCEL",
+                                style: TextStyle(color: Colors.redAccent))),
+                        TextButton(
+                          onPressed: () {
+                            updateContact(specificID);
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        CheckScreen(todo: contactsAppend)),
+                                    (_) => false);
+                          },
+                          child: const Text("CONFIRM",
+                              style: TextStyle(color: Color(0xFFFCC13A))),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: Icon(Icons.save),
+              label: Text("Save Changes"),
+              foregroundColor: Color(0xFFFCC13A),
+              backgroundColor: Color(0xFF5B3415),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   _row(int key, context) {
@@ -346,7 +365,7 @@ class _UpdateContactState extends State<UpdateContact> {
               disabledBorder: InputBorder.none,
               errorText: isANumber ? null : "Please enter a number",
               contentPadding:
-              EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                  EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
               labelText: 'Phone number',
               suffixIcon: IconButton(
                 onPressed: pnumControllers[key].clear,
@@ -417,7 +436,7 @@ _fieldFocusChange(
 }
 
 class CheckScreen extends StatelessWidget {
-  final List<ContactDataUpdate> todo;
+  final List<SpecificContact> todo;
 
   const CheckScreen({Key? key, required this.todo}) : super(key: key);
 
@@ -461,7 +480,7 @@ class CheckScreen extends StatelessWidget {
                     Text(
                         '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
                         style:
-                        TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
+                            TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
                     for (var strHold in todo[index].phoneNumbers)
                       Text('\n' + strHold,
                           style: TextStyle(
