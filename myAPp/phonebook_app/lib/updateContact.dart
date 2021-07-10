@@ -61,12 +61,12 @@ class _UpdateContactState extends State<UpdateContact> {
 
   _UpdateContactState(this.specificID);
 
-  late Future<SpecificContact> FutureSpecificContact;
+  late Future<SpecificContact> futureSpecificContact;
 
   int checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
   RegExp digitValidator = RegExp("[0-9]+");
-
+  bool defaultVal = true;
   bool isANumber = true;
   String fname = '', lname = '';
 
@@ -81,18 +81,14 @@ class _UpdateContactState extends State<UpdateContact> {
   List<SpecificContact> contactsAppend = <SpecificContact>[];
   List<ContactData> contactsAppendSave = <ContactData>[];
 
-  Future<http.Response> updateContact(String id) {
-    print("Status Updated [" + id + "]");
-    return http.patch(Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/update/' + id));
-  }
-
   void saveContact() {
     List<String> pnums = <String>[];
     for (int i = 0; i < _count; i++) {
       pnums.add(pnumControllers[i].text);
     }
+    List<String> reversedpnums = pnums.reversed.toList();
     setState(() {
-      contactsAppendSave.insert(0, ContactData(lnameController.text, fnameController.text, pnums));
+      contactsAppendSave.insert(0, ContactData(lnameController.text, fnameController.text, reversedpnums));
     });
     print('Status Append Contacts [Success]');
   }
@@ -101,7 +97,7 @@ class _UpdateContactState extends State<UpdateContact> {
   void initState() {
     super.initState();
     _count = 1;
-    FutureSpecificContact = fetchSpecificContact(specificID);
+    futureSpecificContact = fetchSpecificContact(specificID);
   }
 
   @override
@@ -131,6 +127,7 @@ class _UpdateContactState extends State<UpdateContact> {
                   checkAdd = 0;
                   listNumber = 1;
                   _count = 1;
+                  defaultVal = true;
                   fnameController.clear();
                   lnameController.clear();
                   pnumControllers.clear();
@@ -146,7 +143,7 @@ class _UpdateContactState extends State<UpdateContact> {
           child: Container(
             padding: const EdgeInsets.all(20.0),
             child: FutureBuilder<SpecificContact>(
-              future: FutureSpecificContact,
+              future: futureSpecificContact,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   String? name1 = Text(snapshot.data!.firstName.toString()).data;
@@ -155,8 +152,8 @@ class _UpdateContactState extends State<UpdateContact> {
                   for (int i = 0; i < snapshot.data!.phoneNumbers.length; i++) {
                     listPhonenums.add(snapshot.data!.phoneNumbers[i]);
                   }
-
-                  return namesForm(name1!, name2!, listPhonenums, context);
+                  List<String> reverseNumbers = listPhonenums.reversed.toList();
+                  return namesForm(name1!, name2!, reverseNumbers, context);
                 } else if (snapshot.hasError) {
                   return Text("${snapshot.error}");
                 }
@@ -202,9 +199,11 @@ class _UpdateContactState extends State<UpdateContact> {
   }
 
   namesForm(String contentFname, String contentLname, List<String> listPhonenums, context) {
-    fnameController = TextEditingController(text: contentFname);
-    lnameController = TextEditingController(text: contentLname);
-    //_count = listPhonenums.length;
+    if (_count == 1) {
+      fnameController = TextEditingController(text: contentFname);
+      lnameController = TextEditingController(text: contentLname);
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -212,9 +211,10 @@ class _UpdateContactState extends State<UpdateContact> {
         //padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Text("Name: " + contentFname + " " + contentLname),
+            Text("Name: " + contentFname + " " + contentLname,
+                style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 25)),
             SizedBox(
-              height: 10,
+              height: 20,
             ),
             TextFormField(
               controller: fnameController,
@@ -280,7 +280,7 @@ class _UpdateContactState extends State<UpdateContact> {
             SizedBox(height: 20),
             Flexible(
               child: ListView.builder(
-                  //reverse: true,
+                  reverse: true,
                   shrinkWrap: true,
                   itemCount: _count,
                   itemBuilder: (context, index) {
@@ -336,19 +336,18 @@ class _UpdateContactState extends State<UpdateContact> {
     );
   }
 
-  /*_rowBuilder(int index, List<String> listPhonenums, BuildContext context) {
-    for(int i = 0 ; index <= listPhonenums.length; i++){
-      _row(index, listPhonenums, context);
-    }
-  }*/
   _row(int key, List<String> listPhonenums, context) {
-    for (int i = 0; i < listPhonenums.length; i++) {
-      if (key < listPhonenums.length) {
+    if (_count >= 1 && _count <= listPhonenums.length && _count != key) {
+      if (defaultVal == true) {
         pnumControllers[key] = TextEditingController(text: listPhonenums[key]);
-        //pnumControllers.insert(key, TextEditingController(text: listPhonenums[i]));
-      } else {
-        pnumControllers[key] = TextEditingController();
+        if (key == listPhonenums.length-1) {
+          defaultVal = false;
+        }
       }
+
+      //}
+    } else {
+      defaultVal = false;
     }
 
     return new Row(

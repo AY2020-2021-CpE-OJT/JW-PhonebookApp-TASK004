@@ -12,7 +12,7 @@ class DataFromAPI extends StatefulWidget {
 
 class _DataFromAPIState extends State<DataFromAPI> {
   final String apiUrlget = "https://jwa-phonebook-api.herokuapp.com/contacts";
-  final String apiUrldelete = "https://jwa-phonebook-api.herokuapp.com/contacts/delete";
+
   List<dynamic> _users = [];
 
   void fetchContacts() async {
@@ -51,12 +51,11 @@ class _DataFromAPIState extends State<DataFromAPI> {
       body: Container(
         child: FutureBuilder<List<dynamic>>(
           builder: (context, snapshot) {
-            int count = 0;
             return _users.length != 0
                 ? RefreshIndicator(
                     child: ListView.builder(
                         padding: EdgeInsets.all(12.0),
-                        itemCount: count = _users.length,
+                        itemCount: _users.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Dismissible(
                             key: Key(_users[index].toString()),

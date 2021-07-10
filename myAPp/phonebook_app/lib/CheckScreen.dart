@@ -12,8 +12,7 @@ class CheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> strHold = <String>[];
-    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
+    Future<http.Response> createContact(String fname, String lname, List pnums) {
       return http.post(
         Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
         headers: <String, String>{
@@ -40,7 +39,7 @@ class CheckScreen extends StatelessWidget {
         body: ListView.builder(
           itemCount: todo.length,
           itemBuilder: (context, index) {
-            createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
+            createContact(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
             return Container(
               child: Column(
                 children: <Widget>[
