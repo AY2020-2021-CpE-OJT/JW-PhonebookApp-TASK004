@@ -13,8 +13,7 @@ class ContactData {
 }
 
 Future<SpecificContact> fetchSpecificContact(String id) async {
-  final response = await http.get(
-      Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/get/' + id));
+  final response = await http.get(Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/get/' + id));
   print('Status [Success]: Got the ID [$id]');
   if (response.statusCode == 200) {
     print('Status [Success]: Specific Data Appended');
@@ -39,8 +38,7 @@ class SpecificContact {
   String lastName;
   int v;
 
-  factory SpecificContact.fromJson(Map<String, dynamic> json) =>
-      SpecificContact(
+  factory SpecificContact.fromJson(Map<String, dynamic> json) => SpecificContact(
         phoneNumbers: List<String>.from(json["phone_numbers"].map((x) => x)),
         id: json["_id"],
         firstName: json["first_name"],
@@ -63,38 +61,43 @@ class _UpdateContactState extends State<UpdateContact> {
 
   _UpdateContactState(this.specificID);
 
-  late Future<SpecificContact> FutureSpecificContact;
+  late Future<SpecificContact> futureSpecificContact;
 
-  int key = 0, checkAdd = 0, listNumber = 1, _count = 1;
+  int checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
   RegExp digitValidator = RegExp("[0-9]+");
-
+  bool defaultVal = true;
   bool isANumber = true;
   String fname = '', lname = '';
 
   var fnameController = TextEditingController();
   var lnameController = TextEditingController();
 
-  List<TextEditingController> pnumControllers = <TextEditingController>[
-    TextEditingController()
-  ];
+  List<TextEditingController> pnumControllers = <TextEditingController>[TextEditingController()];
 
   final FocusNode fnameFocus = FocusNode();
   final FocusNode lnameFocus = FocusNode();
 
   List<SpecificContact> contactsAppend = <SpecificContact>[];
+  List<ContactData> contactsAppendSave = <ContactData>[];
 
-  Future<http.Response> updateContact(String id) {
-    print("Status Updated [" + id + "]");
-    return http.patch(Uri.parse(
-        'https://jwa-phonebook-api.herokuapp.com/contacts/update/' + id));
+  void saveContact() {
+    List<String> pnums = <String>[];
+    for (int i = 0; i < _count; i++) {
+      pnums.add(pnumControllers[i].text);
+    }
+    List<String> reversedpnums = pnums.reversed.toList();
+    setState(() {
+      contactsAppendSave.insert(0, ContactData(lnameController.text, fnameController.text, reversedpnums));
+    });
+    print('Status Append Contacts [Success]');
   }
 
   @override
   void initState() {
     super.initState();
     _count = 1;
-    FutureSpecificContact = fetchSpecificContact(specificID);
+    futureSpecificContact = fetchSpecificContact(specificID);
   }
 
   @override
@@ -114,24 +117,21 @@ class _UpdateContactState extends State<UpdateContact> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text("Update Contact",
-              style: TextStyle(color: Color(0xFF5B3415))),
+          title: Text("Update Contact", style: TextStyle(color: Color(0xFF5B3415))),
           actions: [
             IconButton(
               icon: Icon(Icons.refresh),
               onPressed: () async {
                 FocusManager.instance.primaryFocus?.unfocus();
                 setState(() {
-                  key = 0;
                   checkAdd = 0;
                   listNumber = 1;
                   _count = 1;
+                  defaultVal = true;
                   fnameController.clear();
                   lnameController.clear();
                   pnumControllers.clear();
-                  pnumControllers = <TextEditingController>[
-                    TextEditingController()
-                  ];
+                  pnumControllers = <TextEditingController>[TextEditingController()];
                 });
               },
             )
@@ -143,20 +143,22 @@ class _UpdateContactState extends State<UpdateContact> {
           child: Container(
             padding: const EdgeInsets.all(20.0),
             child: FutureBuilder<SpecificContact>(
-              future: FutureSpecificContact,
+              future: futureSpecificContact,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  String? name1 =
-                      Text(snapshot.data!.firstName.toString()).data;
+                  String? name1 = Text(snapshot.data!.firstName.toString()).data;
                   String? name2 = Text(snapshot.data!.lastName.toString()).data;
-                  return namesForm(name1!, name2!, context);
+                  List<String> listPhonenums = <String>[];
+                  for (int i = 0; i < snapshot.data!.phoneNumbers.length; i++) {
+                    listPhonenums.add(snapshot.data!.phoneNumbers[i]);
+                  }
+                  List<String> reverseNumbers = listPhonenums.reversed.toList();
+                  return namesForm(name1!, name2!, reverseNumbers, context);
                 } else if (snapshot.hasError) {
                   return Text("${snapshot.error}");
                 }
                 return Center(
-                    child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF5B3415))));
+                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5B3415))));
               },
             ),
           ),
@@ -181,17 +183,13 @@ class _UpdateContactState extends State<UpdateContact> {
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
-                child: const Text("CANCEL",
-                    style: TextStyle(color: Colors.redAccent))),
+                child: const Text("CANCEL", style: TextStyle(color: Colors.redAccent))),
             TextButton(
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => DataFromAPI()),
-                    (_) => false);
+                    context, MaterialPageRoute(builder: (context) => DataFromAPI()), (_) => false);
               },
-              child: const Text("CONFIRM",
-                  style: TextStyle(color: Color(0xFFFCC13A))),
+              child: const Text("CONFIRM", style: TextStyle(color: Color(0xFFFCC13A))),
             ),
           ],
         );
@@ -200,9 +198,12 @@ class _UpdateContactState extends State<UpdateContact> {
     return new Future.value(true);
   }
 
-  namesForm(String contentFname, String contentLname, context) {
-    fnameController = TextEditingController(text: contentFname);
-    lnameController = TextEditingController(text: contentLname);
+  namesForm(String contentFname, String contentLname, List<String> listPhonenums, context) {
+    if (_count == 1) {
+      fnameController = TextEditingController(text: contentFname);
+      lnameController = TextEditingController(text: contentLname);
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -210,9 +211,10 @@ class _UpdateContactState extends State<UpdateContact> {
         //padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Text("Name: " + contentFname + " " + contentLname),
+            Text("Name: " + contentFname + " " + contentLname,
+                style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 25)),
             SizedBox(
-              height: 10,
+              height: 20,
             ),
             TextFormField(
               controller: fnameController,
@@ -236,8 +238,7 @@ class _UpdateContactState extends State<UpdateContact> {
                 ),
                 //errorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                 labelText: 'First name',
                 suffixIcon: IconButton(
                   onPressed: fnameController.clear,
@@ -266,8 +267,7 @@ class _UpdateContactState extends State<UpdateContact> {
                   ),
                 ),
                 disabledBorder: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
                 labelText: 'Last Name',
                 suffixIcon: IconButton(
                   onPressed: lnameController.clear,
@@ -276,8 +276,7 @@ class _UpdateContactState extends State<UpdateContact> {
               ),
             ),
             SizedBox(height: 20),
-            Text("Contact Number/s: $listNumber",
-                style: TextStyle(color: Color(0xFF5B3415))),
+            Text("Contact Number/s: $listNumber", style: TextStyle(color: Color(0xFF5B3415))),
             SizedBox(height: 20),
             Flexible(
               child: ListView.builder(
@@ -285,7 +284,7 @@ class _UpdateContactState extends State<UpdateContact> {
                   shrinkWrap: true,
                   itemCount: _count,
                   itemBuilder: (context, index) {
-                    return _row(index, context);
+                    return _row(index, listPhonenums, context);
                   }),
             ),
             SizedBox(height: 20),
@@ -306,20 +305,20 @@ class _UpdateContactState extends State<UpdateContact> {
                             onPressed: () {
                               Navigator.of(context).pop(false);
                             },
-                            child: const Text("CANCEL",
-                                style: TextStyle(color: Colors.redAccent))),
+                            child: const Text("CANCEL", style: TextStyle(color: Colors.redAccent))),
                         TextButton(
                           onPressed: () {
-                            updateContact(specificID);
+                            saveContact();
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        CheckScreen(todo: contactsAppend)),
-                                    (_) => false);
+                                    builder: (context) => CheckScreen(
+                                          todo: contactsAppendSave,
+                                          specificID: specificID,
+                                        )),
+                                (_) => false);
                           },
-                          child: const Text("CONFIRM",
-                              style: TextStyle(color: Color(0xFFFCC13A))),
+                          child: const Text("CONFIRM", style: TextStyle(color: Color(0xFFFCC13A))),
                         ),
                       ],
                     );
@@ -337,8 +336,21 @@ class _UpdateContactState extends State<UpdateContact> {
     );
   }
 
-  _row(int key, context) {
-    return Row(
+  _row(int key, List<String> listPhonenums, context) {
+    if (_count >= 1 && _count <= listPhonenums.length && _count != key) {
+      if (defaultVal == true) {
+        pnumControllers[key] = TextEditingController(text: listPhonenums[key]);
+        if (key == listPhonenums.length-1) {
+          defaultVal = false;
+        }
+      }
+
+      //}
+    } else {
+      defaultVal = false;
+    }
+
+    return new Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -364,8 +376,7 @@ class _UpdateContactState extends State<UpdateContact> {
               // errorBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               errorText: isANumber ? null : "Please enter a number",
-              contentPadding:
-                  EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+              contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
               labelText: 'Phone number',
               suffixIcon: IconButton(
                 onPressed: pnumControllers[key].clear,
@@ -429,22 +440,22 @@ class _UpdateContactState extends State<UpdateContact> {
   }
 }
 
-_fieldFocusChange(
-    BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+_fieldFocusChange(BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
   currentFocus.unfocus();
   FocusScope.of(context).requestFocus(nextFocus);
 }
 
 class CheckScreen extends StatelessWidget {
-  final List<SpecificContact> todo;
+  final List<ContactData> todo;
+  final String specificID;
 
-  const CheckScreen({Key? key, required this.todo}) : super(key: key);
+  const CheckScreen({Key? key, required this.todo, required this.specificID}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Future<http.Response> createAlbum(String fname, String lname, List pnums) {
       return http.patch(
-        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/update/'),
+        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/update/' + specificID),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -456,7 +467,104 @@ class CheckScreen extends StatelessWidget {
       );
     }
 
+    List<int> listNumbers = [];
+    for (int i = 0; i < todo[0].phoneNumbers.length; i++) {
+      listNumbers.add(i + 1);
+    }
     return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text('Contact Summary')),
+        ),
+        body: ListView.builder(
+          itemCount: todo.length,
+          itemBuilder: (context, index) {
+            createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
+            return Container(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Text('Successfully Updated',
+                      style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 35)),
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('First Name: ',
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center),
+                      Text('${todo[index].firstName}',
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Last Name: ',
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center),
+                      Text('${todo[index].lastName}',
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text('Contact Numbers/s:  ',
+                      style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(
+                      listNumbers.length,
+                      (index) {
+                        return Container(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Phone #' +
+                                    listNumbers[index].toString() +
+                                    ':\t\t' +
+                                    todo[0].phoneNumbers[index].toString(),
+                                style: TextStyle(
+                                  color: Color(0xFF5B3415),
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(context, '/screen1', (_) => false);
+          },
+          icon: Icon(Icons.done_all),
+          label: Text("Done"),
+          foregroundColor: Color(0xFFFCC13A),
+          backgroundColor: Color(0xFF5B3415),
+        ),
+      ),
+    );
+    /*return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(
@@ -467,24 +575,17 @@ class CheckScreen extends StatelessWidget {
           child: ListView.builder(
             itemCount: todo.length,
             itemBuilder: (context, index) {
-              createAlbum(todo[index].firstName, todo[index].lastName,
-                  todo[index].phoneNumbers);
+              createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
               return Container(
                 child: Column(
                   children: <Widget>[
                     Text('\nSuccessfully Updated',
-                        style: TextStyle(
-                            color: Color(0xFF5B3415),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40)),
+                        style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 40)),
                     Text(
                         '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
-                        style:
-                            TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
+                        style: TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
                     for (var strHold in todo[index].phoneNumbers)
-                      Text('\n' + strHold,
-                          style: TextStyle(
-                              color: Color(0xFF5B3415), fontSize: 20)),
+                      Text('\n' + strHold, style: TextStyle(color: Color(0xFF5B3415), fontSize: 20)),
                     SizedBox(
                       height: 20,
                     ),
@@ -493,18 +594,15 @@ class CheckScreen extends StatelessWidget {
                       child: ElevatedButton(
                         child: new Text(
                           "Done",
-                          style: new TextStyle(
-                              fontSize: 20.0, color: Color(0xFFFCC13A)),
+                          style: new TextStyle(fontSize: 20.0, color: Color(0xFFFCC13A)),
                         ),
                         onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/screen1', (_) => false);
+                          Navigator.pushNamedAndRemoveUntil(context, '/screen1', (_) => false);
                         },
                         style: ElevatedButton.styleFrom(
                             primary: Color(0xFF5B3415),
                             elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             padding: EdgeInsets.all(20)),
                       ),
                     ),
@@ -518,6 +616,6 @@ class CheckScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    );*/
   }
 }

@@ -17,7 +17,7 @@ class CreateNewContact extends StatefulWidget {
 }
 
 class _CreateNewContactState extends State<CreateNewContact> {
-  int key = 0, checkAdd = 0, listNumber = 1, _count = 1;
+  int checkAdd = 0, listNumber = 1, _count = 1;
   String val = '';
   RegExp digitValidator = RegExp("[0-9]+");
 
@@ -76,7 +76,6 @@ class _CreateNewContactState extends State<CreateNewContact> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
               setState(() {
-                key = 0;
                 checkAdd = 0;
                 listNumber = 1;
                 _count = 1;

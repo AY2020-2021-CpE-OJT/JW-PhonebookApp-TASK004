@@ -12,8 +12,7 @@ class CheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> strHold = <String>[];
-    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
+    Future<http.Response> createContact(String fname, String lname, List pnums) {
       return http.post(
         Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
         headers: <String, String>{
@@ -40,8 +39,7 @@ class CheckScreen extends StatelessWidget {
         body: ListView.builder(
           itemCount: todo.length,
           itemBuilder: (context, index) {
-            createAlbum(todo[index].firstName, todo[index].lastName,
-                todo[index].phoneNumbers);
+            createContact(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
             return Container(
               child: Column(
                 children: <Widget>[
@@ -49,10 +47,7 @@ class CheckScreen extends StatelessWidget {
                     height: 40,
                   ),
                   Text('Successfully Created',
-                      style: TextStyle(
-                          color: Color(0xFF5B3415),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 40)),
+                      style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 35)),
                   SizedBox(
                     height: 40,
                   ),
@@ -60,15 +55,10 @@ class CheckScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('First Name: ',
-                          style: TextStyle(
-                              color: Color(0xFF5B3415),
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center),
                       Text('${todo[index].firstName}',
-                          style:
-                              TextStyle(color: Color(0xFF5B3415), fontSize: 24),
-                          textAlign: TextAlign.center),
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
                     ],
                   ),
                   SizedBox(
@@ -78,25 +68,17 @@ class CheckScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('Last Name: ',
-                          style: TextStyle(
-                              color: Color(0xFF5B3415),
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center),
                       Text('${todo[index].lastName}',
-                          style:
-                              TextStyle(color: Color(0xFF5B3415), fontSize: 24),
-                          textAlign: TextAlign.center),
+                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
                     ],
                   ),
                   SizedBox(
                     height: 20,
                   ),
                   Text('Contact Numbers/s:  ',
-                      style: TextStyle(
-                          color: Color(0xFF5B3415),
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,8 +114,7 @@ class CheckScreen extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/screen1', (_) => false);
+            Navigator.pushNamedAndRemoveUntil(context, '/screen1', (_) => false);
           },
           icon: Icon(Icons.done_all),
           label: Text("Done"),
