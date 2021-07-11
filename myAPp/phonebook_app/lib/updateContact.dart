@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:phonebook_app/DataFromAPI.dart';
 
+import 'UpdateScreen.dart';
+
 class ContactData {
   final String lastName;
   final String firstName;
@@ -199,6 +201,7 @@ class _UpdateContactState extends State<UpdateContact> {
   }
 
   namesForm(String contentFname, String contentLname, List<String> listPhonenums, context) {
+
     if (_count == 1) {
       fnameController = TextEditingController(text: contentFname);
       lnameController = TextEditingController(text: contentLname);
@@ -299,7 +302,7 @@ class _UpdateContactState extends State<UpdateContact> {
                             color: Color(0xFF5B3415),
                             fontWeight: FontWeight.bold,
                           )),
-                      content: const Text("Confirm creating this contact"),
+                      content: const Text("Confirm changes?"),
                       actions: <Widget>[
                         TextButton(
                             onPressed: () {
@@ -312,7 +315,7 @@ class _UpdateContactState extends State<UpdateContact> {
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => CheckScreen(
+                                    builder: (context) => UpdateScreen(
                                           todo: contactsAppendSave,
                                           specificID: specificID,
                                         )),
@@ -335,8 +338,8 @@ class _UpdateContactState extends State<UpdateContact> {
       ),
     );
   }
-
   _row(int key, List<String> listPhonenums, context) {
+
     if (_count >= 1 && _count <= listPhonenums.length && _count != key) {
       if (defaultVal == true) {
         pnumControllers[key] = TextEditingController(text: listPhonenums[key]);
@@ -344,8 +347,6 @@ class _UpdateContactState extends State<UpdateContact> {
           defaultVal = false;
         }
       }
-
-      //}
     } else {
       defaultVal = false;
     }
@@ -373,7 +374,6 @@ class _UpdateContactState extends State<UpdateContact> {
                   color: Color(0xFFFCC13A),
                 ),
               ),
-              // errorBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               errorText: isANumber ? null : "Please enter a number",
               contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
@@ -445,177 +445,3 @@ _fieldFocusChange(BuildContext context, FocusNode currentFocus, FocusNode nextFo
   FocusScope.of(context).requestFocus(nextFocus);
 }
 
-class CheckScreen extends StatelessWidget {
-  final List<ContactData> todo;
-  final String specificID;
-
-  const CheckScreen({Key? key, required this.todo, required this.specificID}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
-      return http.patch(
-        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/update/' + specificID),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'phone_numbers': pnums,
-          'first_name': fname,
-          'last_name': lname,
-        }),
-      );
-    }
-
-    List<int> listNumbers = [];
-    for (int i = 0; i < todo[0].phoneNumbers.length; i++) {
-      listNumbers.add(i + 1);
-    }
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Center(child: Text('Contact Summary')),
-        ),
-        body: ListView.builder(
-          itemCount: todo.length,
-          itemBuilder: (context, index) {
-            createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
-            return Container(
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: 40,
-                  ),
-                  Text('Successfully Updated',
-                      style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 35)),
-                  SizedBox(
-                    height: 40,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('First Name: ',
-                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center),
-                      Text('${todo[index].firstName}',
-                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Last Name: ',
-                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center),
-                      Text('${todo[index].lastName}',
-                          style: TextStyle(color: Color(0xFF5B3415), fontSize: 24), textAlign: TextAlign.center),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text('Contact Numbers/s:  ',
-                      style: TextStyle(color: Color(0xFF5B3415), fontSize: 24, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(
-                      listNumbers.length,
-                      (index) {
-                        return Container(
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                'Phone #' +
-                                    listNumbers[index].toString() +
-                                    ':\t\t' +
-                                    todo[0].phoneNumbers[index].toString(),
-                                style: TextStyle(
-                                  color: Color(0xFF5B3415),
-                                  fontSize: 22,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.pushNamedAndRemoveUntil(context, '/screen1', (_) => false);
-          },
-          icon: Icon(Icons.done_all),
-          label: Text("Done"),
-          foregroundColor: Color(0xFFFCC13A),
-          backgroundColor: Color(0xFF5B3415),
-        ),
-      ),
-    );
-    /*return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Center(child: Text('Successful')),
-        ),
-        body: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: ListView.builder(
-            itemCount: todo.length,
-            itemBuilder: (context, index) {
-              createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
-              return Container(
-                child: Column(
-                  children: <Widget>[
-                    Text('\nSuccessfully Updated',
-                        style: TextStyle(color: Color(0xFF5B3415), fontWeight: FontWeight.bold, fontSize: 40)),
-                    Text(
-                        '\n\nFirst Name: ${todo[index].firstName} \n\nLast Name: ${todo[index].lastName} \n\nContact/s:',
-                        style: TextStyle(color: Color(0xFF5B3415), fontSize: 24)),
-                    for (var strHold in todo[index].phoneNumbers)
-                      Text('\n' + strHold, style: TextStyle(color: Color(0xFF5B3415), fontSize: 20)),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    SizedBox(
-                      width: 300,
-                      child: ElevatedButton(
-                        child: new Text(
-                          "Done",
-                          style: new TextStyle(fontSize: 20.0, color: Color(0xFFFCC13A)),
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(context, '/screen1', (_) => false);
-                        },
-                        style: ElevatedButton.styleFrom(
-                            primary: Color(0xFF5B3415),
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                            padding: EdgeInsets.all(20)),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );*/
-  }
-}
