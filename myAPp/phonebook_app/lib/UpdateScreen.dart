@@ -1,20 +1,20 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+import 'updateContact.dart';
 
-import 'createContact.dart';
-
-class CheckScreen extends StatelessWidget {
+class UpdateScreen extends StatelessWidget {
   final List<ContactData> todo;
+  final String specificID;
 
-  const CheckScreen({Key? key, required this.todo}) : super(key: key);
+  const UpdateScreen({Key? key, required this.todo, required this.specificID}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Future<http.Response> createContact(String fname, String lname, List pnums) {
-      return http.post(
-        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/new'),
+    Future<http.Response> createAlbum(String fname, String lname, List pnums) {
+      return http.patch(
+        Uri.parse('https://jwa-phonebook-api.herokuapp.com/contacts/update/' + specificID),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -39,14 +39,14 @@ class CheckScreen extends StatelessWidget {
         body: ListView.builder(
           itemCount: todo.length,
           itemBuilder: (context, index) {
-            createContact(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
+            createAlbum(todo[index].firstName, todo[index].lastName, todo[index].phoneNumbers);
             return Container(
               child: Column(
                 children: <Widget>[
                   SizedBox(
                     height: 40,
                   ),
-                  Text('Successfully Created',
+                  Text('Successfully Updated',
                       style: TextStyle(color: Color(0xFF3ED933), fontWeight: FontWeight.bold, fontSize: 35)),
                   SizedBox(
                     height: 40,
@@ -84,7 +84,7 @@ class CheckScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: List.generate(
                       listNumbers.length,
-                      (index) {
+                          (index) {
                         return Container(
                           child: Column(
                             children: [

@@ -82,7 +82,7 @@ class _DataFromAPIState extends State<DataFromAPI> {
                               });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('$userDeleted dismissed'),
+                                  content: Text('$userDeleted deleted'),
                                 ),
                               );
                             },
@@ -120,15 +120,18 @@ class _DataFromAPIState extends State<DataFromAPI> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15.0),
                                     ),
-                                    tileColor: index % 2 == 0 ? Color(0x80FCC13A) : Color(0x40FFB500),
+                                    tileColor: index % 2 == 0 ? Color(0x8070B3E7) : Color(0x80FCC13A),
                                     title: Text(
                                       _name(_users[index]),
                                       style: TextStyle(
-                                        color: Color(0xFF5B3415),
+                                        color: index % 2 == 0 ? Color(0xFF0C2F5A) : Color(0xFF5B3415),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    subtitle: Text(_phonenum(_users[index])),
+                                    subtitle: Text(_phonenum(_users[index]),
+                                        style: TextStyle(
+                                          color: index % 2 == 0 ? Color(0xFF0C2F5A) : Color(0xFF5B3415),
+                                        )),
                                     onTap: () {
                                       List<int> listNumbers = [];
                                       for (int i = 0; i < _users[index]['phone_numbers'].length; i++) {
@@ -240,7 +243,11 @@ class _DataFromAPIState extends State<DataFromAPI> {
                     onRefresh: _getData,
                   )
                 : Center(
-                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5B3415))));
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFCC13A)),
+                      backgroundColor: Color(0xFF5B3415),
+                    ),
+                  );
           },
         ),
       ),
