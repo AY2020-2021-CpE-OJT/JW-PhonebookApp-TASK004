@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -120,17 +122,28 @@ class _DataFromAPIState extends State<DataFromAPI> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15.0),
                                     ),
-                                    tileColor: index % 2 == 0 ? Color(0x8070B3E7) : Color(0x80FCC13A),
+                                    tileColor: index % 2 == 0 ? Color(0x80FCC13A) : Color(0x8070B3E7),
+                                    leading: CircleAvatar(
+                                      backgroundColor: index % 2 == 0 ? Color(0xBF5B3415) : Color(0x800C2F5A),
+                                      radius: 30.0,
+                                      child: Text(_users[index]['first_name'][0] + _users[index]['last_name'][0],
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: index % 2 == 0 ? Color(0xFFFCC13A) : Color(0xFFFFFFFF),
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                    trailing: Icon(Icons.arrow_back_ios),
                                     title: Text(
                                       _name(_users[index]),
                                       style: TextStyle(
-                                        color: index % 2 == 0 ? Color(0xFF0C2F5A) : Color(0xFF5B3415),
+                                        fontSize: 24,
+                                        color: index % 2 == 0 ? Color(0xFF5B3415) : Color(0xFF0C2F5A),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     subtitle: Text(_phonenum(_users[index]),
                                         style: TextStyle(
-                                          color: index % 2 == 0 ? Color(0xFF0C2F5A) : Color(0xFF5B3415),
+                                          color: index % 2 == 0 ? Color(0xBF5B3415) : Color(0xBF0C2F5A),
                                         )),
                                     onTap: () {
                                       List<int> listNumbers = [];
