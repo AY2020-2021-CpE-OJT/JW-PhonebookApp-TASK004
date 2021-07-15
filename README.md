@@ -1,7 +1,7 @@
 
 # ![](assets/icon/logo-50x50.png)  Phonebook Application
 
-**Phonebook application** that uses **Flutter SDK** via Android Studio IDE as a front-end. With a back-end of Node.js REST API it uses Express, Mongoose and MongoDB Atlas. It features **C**reate, **R**ead, **U**pdate and **D**elete. It has **no Authentication**.
+**Phonebook application** that uses **Flutter SDK** via Android Studio IDE as a front-end. With a back-end of Node.js REST API it uses Express, Mongoose and MongoDB Atlas. It features **C**reate, **R**ead, **U**pdate and **D**elete. It has **no Authentication** and it is integrated to Cloud via Heroku.
 
 ## Screens
 
